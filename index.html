@@ -3,367 +3,1048 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>홈 에이전트</title>
+  <title>홈 에이전트 · 라이브 대시보드</title>
+  <meta name="description" content="오늘 브리핑, 진행 상황, 연결 안정성을 한 화면에서 보는 홈 에이전트 운영 대시보드" />
   <style>
     :root {
-      --bg: #f4f7fb;
-      --card: #ffffff;
-      --line: #e4e9f2;
-      --text: #162033;
-      --muted: #66718a;
-      --accent: #3f6fff;
-      --accent-soft: #ecf2ff;
-      --ok-bg: #e9f8ef;
-      --ok-text: #1f7a47;
-      --warn-bg: #fff5df;
-      --warn-text: #9a6200;
-      --pending-bg: #f1f3f8;
-      --pending-text: #5e6b84;
-      --danger-bg: #ffe8e8;
-      --danger-text: #b13737;
-      --radius: 20px;
-      --shadow: 0 10px 30px rgba(22, 32, 51, 0.08);
+      color-scheme: dark;
+      --bg: #07111f;
+      --bg-2: #0c1830;
+      --panel: rgba(9, 17, 33, 0.72);
+      --panel-strong: rgba(13, 24, 45, 0.92);
+      --panel-soft: rgba(255, 255, 255, 0.04);
+      --line: rgba(255, 255, 255, 0.08);
+      --line-strong: rgba(122, 156, 255, 0.24);
+      --text: #eff4ff;
+      --muted: #97a7c7;
+      --accent: #7c9cff;
+      --accent-2: #58e0c5;
+      --accent-3: #b59cff;
+      --ok-bg: rgba(50, 206, 138, 0.16);
+      --ok-text: #8df0bf;
+      --warn-bg: rgba(255, 196, 102, 0.14);
+      --warn-text: #ffd58a;
+      --pending-bg: rgba(255, 255, 255, 0.08);
+      --pending-text: #c7d3ea;
+      --danger-bg: rgba(255, 111, 132, 0.14);
+      --danger-text: #ffabb7;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+      --radius-xl: 28px;
+      --radius-lg: 22px;
+      --radius-md: 18px;
+      --radius-sm: 14px;
+      --max-width: 1280px;
     }
 
     * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
 
     body {
       margin: 0;
-      font-family: "Pretendard", "Noto Sans KR", system-ui, -apple-system, sans-serif;
-      background: var(--bg);
+      min-height: 100vh;
+      font-family: Inter, "Pretendard", "Noto Sans KR", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
       color: var(--text);
-      line-height: 1.5;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(124, 156, 255, 0.28), transparent 26%),
+        radial-gradient(circle at 100% 0%, rgba(88, 224, 197, 0.18), transparent 26%),
+        radial-gradient(circle at 50% 100%, rgba(181, 156, 255, 0.12), transparent 30%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+      line-height: 1.55;
     }
 
-    .wrap {
-      width: min(760px, calc(100% - 24px));
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: radial-gradient(circle at center, black 45%, transparent 92%);
+      opacity: 0.45;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button, textarea { font: inherit; }
+
+    .shell {
+      width: min(var(--max-width), calc(100% - 20px));
       margin: 0 auto;
-      padding: 18px 0 40px;
+      padding: 14px 0 40px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .mobile-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(16px);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 0.92rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: #06111f;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.08) inset, 0 14px 32px rgba(88, 224, 197, 0.18);
+      flex-shrink: 0;
+    }
+
+    .topbar-brand strong,
+    .hero-copy h1,
+    .section-title,
+    .panel-title,
+    .card-title,
+    .signal-value,
+    .metric-value,
+    .stage-title,
+    .activity-title,
+    .health-title {
+      text-wrap: balance;
+    }
+
+    .topbar-brand-text {
+      min-width: 0;
+    }
+
+    .topbar-brand-text strong {
+      display: block;
+      font-size: 0.98rem;
+    }
+
+    .topbar-brand-text span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .topbar-link {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 0 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--line);
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
     }
 
     .hero,
-    .card {
-      background: var(--card);
+    .panel,
+    .subpanel {
+      position: relative;
+      overflow: hidden;
       border: 1px solid var(--line);
-      border-radius: var(--radius);
+      background: var(--panel);
+      backdrop-filter: blur(20px);
+      border-radius: var(--radius-xl);
       box-shadow: var(--shadow);
     }
 
     .hero {
-      padding: 22px;
-      margin-bottom: 14px;
+      padding: 22px 18px 20px;
     }
 
-    .eyebrow,
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 12px;
+    .hero::before,
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: auto auto -40% -10%;
+      width: 52%;
+      aspect-ratio: 1;
       border-radius: 999px;
-      font-size: 0.88rem;
-      font-weight: 700;
+      background: radial-gradient(circle, rgba(124, 156, 255, 0.24), transparent 70%);
+      pointer-events: none;
+      filter: blur(24px);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      top: -12%;
+      right: -6%;
+      width: 180px;
+      height: 180px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(88, 224, 197, 0.22), transparent 68%);
+      filter: blur(8px);
+      pointer-events: none;
+    }
+
+    .hero-head {
+      display: grid;
+      gap: 16px;
+      position: relative;
+      z-index: 1;
     }
 
     .eyebrow {
-      background: var(--accent-soft);
-      color: var(--accent);
-      margin-bottom: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      min-height: 36px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(124, 156, 255, 0.22);
+      background: rgba(124, 156, 255, 0.1);
+      color: #bdd0ff;
+      font-size: 0.86rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
     }
 
-    .pill.ok { background: var(--ok-bg); color: var(--ok-text); }
-    .pill.warn { background: var(--warn-bg); color: var(--warn-text); }
-    .pill.pending { background: var(--pending-bg); color: var(--pending-text); }
-    .pill.danger { background: var(--danger-bg); color: var(--danger-text); }
-
-    h1 {
+    .hero-copy h1 {
       margin: 0 0 10px;
-      font-size: 1.75rem;
-      line-height: 1.2;
+      font-size: clamp(1.8rem, 6vw, 3.2rem);
+      line-height: 1.06;
+      letter-spacing: -0.04em;
     }
 
-    .hero p,
-    .sub,
-    .helper,
-    .footer-note,
-    .meta,
-    .detail,
-    .muted {
+    .hero-copy p {
+      margin: 0;
+      font-size: 0.98rem;
       color: var(--muted);
+      max-width: 680px;
     }
 
-    .hero p { margin: 0; }
-
-    .quick-status,
-    .stack,
-    .brief,
-    .history,
-    .stage-list,
-    .health-list,
-    .actions {
+    .signal-strip {
       display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
     }
 
-    .quick-status {
-      grid-template-columns: repeat(3, 1fr);
-      margin-top: 16px;
-    }
-
-    .status-box,
-    .brief-item,
-    .list-item,
-    .history-item,
-    .stage-item,
-    .health-item,
-    .incident-box {
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      background: #fbfcff;
-    }
-
-    .status-box,
-    .stage-item,
-    .health-item,
-    .incident-box {
+    .signal-card {
       padding: 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.025));
+      min-height: 110px;
+      display: grid;
+      align-content: space-between;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
     }
 
-    .status-label {
-      font-size: 0.82rem;
+    .signal-card::after {
+      content: "";
+      position: absolute;
+      inset: auto -10% -45% auto;
+      width: 120px;
+      height: 120px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(124,156,255,0.25), transparent 70%);
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
+    .signal-label {
       color: var(--muted);
-      margin-bottom: 6px;
+      font-size: 0.8rem;
+      letter-spacing: 0.02em;
     }
 
-    .status-value {
-      font-size: 1.05rem;
+    .signal-value {
+      font-size: 1.14rem;
       font-weight: 800;
     }
 
-    .card { padding: 18px; }
-    .card h2 { margin: 0 0 6px; font-size: 1.1rem; }
-    .sub { font-size: 0.93rem; margin-bottom: 14px; }
-
-    .brief-item,
-    .list-item,
-    .history-item {
-      padding: 14px;
-    }
-
-    .brief-item strong,
-    .list-item strong,
-    .history-item strong,
-    .stage-main strong,
-    .health-main strong,
-    .incident-main strong {
-      display: block;
-      margin-bottom: 4px;
-      font-size: 0.96rem;
-    }
-
-    .brief-item span,
-    .list-item span,
-    .history-item span,
-    .stage-main span,
-    .health-main span,
-    .incident-main span {
+    .signal-meta {
       color: var(--muted);
-      font-size: 0.92rem;
+      font-size: 0.78rem;
     }
 
-    .progress-head,
-    .incident-head,
-    .stage-top,
-    .health-top {
+    .signal-value.accent {
+      color: #dce7ff;
+    }
+
+    .hero-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .action-btn,
+    .soft-btn,
+    .ghost-btn {
+      width: 100%;
+      min-height: 52px;
+      border-radius: 16px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .action-btn:active,
+    .soft-btn:active,
+    .ghost-btn:active {
+      transform: translateY(1px);
+    }
+
+    .action-btn {
+      background: linear-gradient(135deg, var(--accent), #90a4ff);
+      color: #07111f;
+      font-weight: 800;
+      box-shadow: 0 18px 40px rgba(124, 156, 255, 0.26);
+    }
+
+    .soft-btn {
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      border-color: rgba(255,255,255,0.06);
+      font-weight: 700;
+    }
+
+    .ghost-btn {
+      background: rgba(255,255,255,0.02);
+      color: var(--muted);
+      border-color: rgba(255,255,255,0.05);
+      font-weight: 700;
+    }
+
+    .nav-pills {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+    }
+
+    .nav-pills::-webkit-scrollbar { display: none; }
+
+    .nav-pill {
+      white-space: nowrap;
+      min-height: 40px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.035);
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.84rem;
+      font-weight: 700;
+    }
+
+    .section-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .panel {
+      padding: 18px;
+    }
+
+    .panel-head {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .panel-kicker {
+      font-size: 0.78rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #90a4c8;
+      margin-bottom: 6px;
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 1.15rem;
+      line-height: 1.2;
+    }
+
+    .panel-sub {
+      margin: 6px 0 0;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .pill,
+    .badge,
+    .status-dot {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 32px;
+      padding: 0 12px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      flex-shrink: 0;
+    }
+
+    .pill.ok, .badge.ok, .status-dot.ok { background: var(--ok-bg); color: var(--ok-text); }
+    .pill.warn, .badge.warn, .status-dot.warn { background: var(--warn-bg); color: var(--warn-text); }
+    .pill.pending, .badge.pending, .status-dot.pending { background: var(--pending-bg); color: var(--pending-text); }
+    .pill.danger, .badge.danger, .status-dot.danger { background: var(--danger-bg); color: var(--danger-text); }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
       margin-bottom: 12px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .metric {
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.035);
+      min-height: 108px;
+      display: grid;
+      gap: 8px;
+      align-content: space-between;
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .metric-value {
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .metric-detail {
+      color: var(--muted);
+      font-size: 0.78rem;
     }
 
     .progress-track {
       width: 100%;
-      height: 12px;
+      height: 14px;
       border-radius: 999px;
-      background: #edf2fb;
+      background: rgba(255,255,255,0.08);
       overflow: hidden;
       margin-bottom: 10px;
+      position: relative;
     }
 
     .progress-fill {
-      height: 100%;
       width: 0%;
-      background: linear-gradient(90deg, #5b7cff, #86a2ff);
+      height: 100%;
       border-radius: inherit;
-      transition: width 0.25s ease;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+      box-shadow: 0 0 24px rgba(124, 156, 255, 0.35);
+      transition: width 0.35s ease;
     }
 
-    .meta { font-size: 0.84rem; }
-
-    .stage-main,
-    .health-main,
-    .incident-main {
-      flex: 1;
+    .progress-meta {
+      color: var(--muted);
+      font-size: 0.84rem;
+      margin-bottom: 12px;
     }
 
-    .badge {
-      flex-shrink: 0;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 0.82rem;
-      font-weight: 700;
+    .timeline,
+    .health-grid,
+    .brief-list,
+    .activity-list,
+    .request-suggestions {
+      display: grid;
+      gap: 10px;
     }
 
-    .badge.ok { background: var(--ok-bg); color: var(--ok-text); }
-    .badge.warn { background: var(--warn-bg); color: var(--warn-text); }
-    .badge.pending { background: var(--pending-bg); color: var(--pending-text); }
-    .badge.danger { background: var(--danger-bg); color: var(--danger-text); }
-
-    .actions { grid-template-columns: 1fr; }
-
-    button {
-      width: 100%;
-      min-height: 48px;
-      border: 0;
-      border-radius: 16px;
-      font: inherit;
-      font-weight: 700;
-      cursor: pointer;
-      padding: 14px 16px;
+    .stage,
+    .health,
+    .brief-item,
+    .activity,
+    .request-chip,
+    .focus-card {
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.035);
+      border-radius: 18px;
     }
 
-    .primary { background: var(--accent); color: white; }
-    .soft { background: var(--accent-soft); color: var(--accent); }
-
-    textarea {
-      width: 100%;
-      min-height: 120px;
-      border: 1px solid var(--line);
-      border-radius: 16px;
+    .stage,
+    .health,
+    .brief-item,
+    .activity,
+    .focus-card {
       padding: 14px;
-      font: inherit;
-      resize: vertical;
-      color: var(--text);
-      background: #fcfdff;
     }
 
-    .helper { margin-top: 10px; font-size: 0.88rem; }
-    .footer-note { margin-top: 14px; text-align: center; font-size: 0.85rem; }
+    .stage-head,
+    .health-head,
+    .activity-head,
+    .brief-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
 
-    @media (max-width: 640px) {
-      .wrap {
-        width: calc(100% - 16px);
-        padding-top: 12px;
+    .stage-title,
+    .health-title,
+    .activity-title,
+    .brief-title {
+      display: block;
+      margin-bottom: 4px;
+      font-weight: 800;
+      font-size: 0.95rem;
+    }
+
+    .stage-copy,
+    .health-copy,
+    .activity-copy,
+    .brief-copy,
+    .focus-copy,
+    .detail {
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .brief-item {
+      display: grid;
+      gap: 8px;
+    }
+
+    .brief-index {
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      display: inline-grid;
+      place-items: center;
+      background: rgba(124,156,255,0.14);
+      color: #dbe6ff;
+      font-size: 0.82rem;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .focus-card {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 12px;
+      background: linear-gradient(180deg, rgba(124,156,255,0.12), rgba(255,255,255,0.035));
+    }
+
+    .focus-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #dce8ff;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .focus-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent-2);
+      box-shadow: 0 0 12px rgba(88,224,197,0.55);
+      flex-shrink: 0;
+    }
+
+    .request-box {
+      width: 100%;
+      min-height: 132px;
+      padding: 16px;
+      border-radius: 18px;
+      resize: vertical;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(3, 8, 17, 0.5);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .request-box:focus {
+      border-color: rgba(124,156,255,0.48);
+      box-shadow: 0 0 0 4px rgba(124,156,255,0.12);
+    }
+
+    .request-helper {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .request-suggestions {
+      grid-template-columns: 1fr;
+      margin-top: 12px;
+    }
+
+    .request-chip {
+      width: 100%;
+      min-height: 46px;
+      padding: 12px 14px;
+      text-align: left;
+      color: var(--text);
+      cursor: pointer;
+      background: rgba(255,255,255,0.03);
+    }
+
+    .request-chip strong {
+      display: block;
+      margin-bottom: 2px;
+      font-size: 0.9rem;
+    }
+
+    .request-chip span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .footer-note {
+      margin-top: 14px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .muted-inline {
+      color: var(--muted);
+    }
+
+    .desktop-only { display: none; }
+
+    @media (min-width: 720px) {
+      .shell {
+        width: min(var(--max-width), calc(100% - 32px));
+        padding-top: 20px;
       }
 
-      h1 { font-size: 1.5rem; }
-      .hero, .card { border-radius: 18px; }
-      .quick-status { grid-template-columns: 1fr; }
-      .progress-head, .incident-head, .stage-top, .health-top {
-        flex-direction: column;
-        align-items: flex-start;
+      .hero {
+        padding: 26px;
       }
+
+      .hero-head {
+        grid-template-columns: 1.25fr 0.95fr;
+        align-items: stretch;
+      }
+
+      .hero-actions {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .signal-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .metrics {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .section-grid {
+        grid-template-columns: 1.08fr 0.92fr;
+      }
+
+      .request-suggestions {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .health-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 1040px) {
+      .shell {
+        display: grid;
+        grid-template-columns: 280px minmax(0, 1fr);
+        gap: 18px;
+        align-items: start;
+      }
+
+      .mobile-topbar {
+        display: none;
+      }
+
+      .desktop-only {
+        display: block;
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 18px;
+        padding: 18px;
+        border: 1px solid var(--line);
+        background: rgba(8, 15, 29, 0.76);
+        backdrop-filter: blur(18px);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .sidebar::before {
+        content: "";
+        position: absolute;
+        inset: auto -15% -18% auto;
+        width: 180px;
+        height: 180px;
+        border-radius: 999px;
+        background: radial-gradient(circle, rgba(124,156,255,0.22), transparent 72%);
+        filter: blur(10px);
+      }
+
+      .sidebar-head {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        gap: 18px;
+        margin-bottom: 20px;
+      }
+
+      .sidebar-section {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        gap: 10px;
+        margin-bottom: 16px;
+      }
+
+      .sidebar-title {
+        color: #90a4c8;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+      }
+
+      .sidebar-card,
+      .sidebar-link,
+      .sidebar-stat {
+        border: 1px solid rgba(255,255,255,0.06);
+        background: rgba(255,255,255,0.035);
+        border-radius: 18px;
+      }
+
+      .sidebar-card,
+      .sidebar-stat { padding: 14px; }
+
+      .sidebar-link {
+        min-height: 48px;
+        padding: 0 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: var(--text);
+        font-weight: 700;
+      }
+
+      .sidebar-link span:last-child {
+        color: var(--muted);
+        font-size: 0.84rem;
+      }
+
+      .sidebar-stat strong {
+        display: block;
+        font-size: 1rem;
+        margin-bottom: 4px;
+      }
+
+      .sidebar-stat span {
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+
+      .content {
+        min-width: 0;
+      }
+
+      .hero-copy p {
+        font-size: 1.02rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .progress-fill,
+      .action-btn,
+      .soft-btn,
+      .ghost-btn,
+      .request-box { transition: none; }
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <section class="hero">
-      <div class="eyebrow">홈 에이전트 · 라이브 요약</div>
-      <h1>오늘 해야 할 일과 시스템 상태를<br />한눈에 보는 집 비서 화면</h1>
-      <p>구축 진행률과 최근 끊김 상태까지 같이 표시하는 운영용 대시보드입니다.</p>
+  <div class="shell">
+    <aside class="sidebar desktop-only" aria-label="대시보드 탐색">
+      <div class="sidebar-head">
+        <div class="topbar-brand">
+          <div class="brand-mark">HA</div>
+          <div class="topbar-brand-text">
+            <strong>홈 에이전트 본부</strong>
+            <span id="sidebarUpdated">데이터 연결 준비 중</span>
+          </div>
+        </div>
 
-      <div class="quick-status">
-        <div class="status-box">
-          <div class="status-label">구축 진행률</div>
-          <div class="status-value" id="progressPercent">읽는 중</div>
-        </div>
-        <div class="status-box">
-          <div class="status-label">브리핑 상태</div>
-          <div class="status-value" id="briefingStatus">읽는 중</div>
-        </div>
-        <div class="status-box">
-          <div class="status-label">연결 안정성</div>
-          <div class="status-value" id="incidentState">확인 중</div>
+        <div class="sidebar-card">
+          <div class="focus-line"><span class="focus-dot"></span><span id="sidebarFocus">오늘 기준 상태를 정리하는 중입니다.</span></div>
         </div>
       </div>
-    </section>
 
-    <div class="stack">
-      <section class="card">
-        <div class="progress-head">
-          <div>
-            <h2>시스템 구축 진행 상황</h2>
-            <div class="sub">사용자님이 바로 이해할 수 있게 단계별 진행률로 보이게 했습니다.</div>
-          </div>
-          <span class="pill pending" id="progressLabel">읽는 중</span>
-        </div>
-        <div class="progress-track">
-          <div class="progress-fill" id="progressFill" aria-hidden="true"></div>
-        </div>
-        <div class="meta" id="progressMeta">진행 상황을 불러오는 중입니다.</div>
-        <div class="stage-list" id="buildStages" style="margin-top:12px;"></div>
-      </section>
+      <div class="sidebar-section">
+        <div class="sidebar-title">바로 이동</div>
+        <a class="sidebar-link" href="#overview"><span>개요</span><span>현재</span></a>
+        <a class="sidebar-link" href="#progress"><span>진행 상황</span><span>단계</span></a>
+        <a class="sidebar-link" href="#briefing"><span>오늘 브리핑</span><span>요약</span></a>
+        <a class="sidebar-link" href="#request"><span>비서 요청</span><span>입력</span></a>
+      </div>
 
-      <section class="card">
-        <div class="incident-head">
-          <div>
-            <h2>연결 상태 / 최근 끊김</h2>
-            <div class="sub">API 지연, 보조 작업 timeout, 재시도 필요 여부를 여기서 봅니다.</div>
-          </div>
-          <span class="pill pending" id="incidentPill">확인 중</span>
+      <div class="sidebar-section">
+        <div class="sidebar-title">핵심 수치</div>
+        <div class="sidebar-stat">
+          <strong id="sidebarProgress">읽는 중</strong>
+          <span>구축 진행률</span>
         </div>
-        <div class="incident-box">
-          <div class="incident-head" style="margin-bottom:0;">
-            <div class="incident-main">
-              <strong id="incidentTitle">읽는 중</strong>
-              <span id="incidentDetail">최근 끊김 상태를 불러오는 중입니다.</span>
+        <div class="sidebar-stat">
+          <strong id="sidebarIncident">확인 중</strong>
+          <span>연결 안정성</span>
+        </div>
+        <div class="sidebar-stat">
+          <strong id="sidebarTodoCount">-</strong>
+          <span>오늘 우선 할 일</span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="mobile-topbar">
+        <div class="topbar-brand">
+          <div class="brand-mark">HA</div>
+          <div class="topbar-brand-text">
+            <strong>홈 에이전트</strong>
+            <span id="mobileUpdated">데이터 연결 준비 중</span>
+          </div>
+        </div>
+        <a class="topbar-link" href="#request">요청</a>
+      </div>
+
+      <section class="hero" id="overview">
+        <div class="hero-head">
+          <div class="hero-copy">
+            <div class="eyebrow">라이브 운영 대시보드</div>
+            <h1>오늘 해야 할 일과<br />시스템 상태를 3초 안에 파악하는 집 비서 화면</h1>
+            <p id="heroSummary">브리핑, 구축 진행률, 최근 끊김 상태를 한 화면에 모아 둔 모바일 우선 운영 화면입니다.</p>
+
+            <div class="hero-actions" style="margin-top:18px;">
+              <button class="action-btn" id="refreshBtn">라이브 요약 새로고침</button>
+              <button class="soft-btn" id="sampleBtn">예시 요청 넣기</button>
+              <button class="ghost-btn" id="clearBtn">입력칸 비우기</button>
             </div>
-            <span class="badge pending" id="incidentBadge">대기</span>
           </div>
-        </div>
-        <div class="meta" id="incidentMeta" style="margin-top:10px;">-</div>
-        <div class="health-list" id="serviceHealth" style="margin-top:12px;"></div>
-      </section>
 
-      <section class="card">
-        <h2>오늘 브리핑</h2>
-        <div class="sub">가장 먼저 봐야 하는 내용만 짧게 보여줍니다.</div>
-        <div class="brief" id="briefingArea"></div>
-      </section>
+          <div class="grid">
+            <div class="signal-strip">
+              <div class="signal-card">
+                <div class="signal-label">구축 진행률</div>
+                <div class="signal-value accent" id="progressPercent">읽는 중</div>
+                <div class="signal-meta" id="progressMiniMeta">현재 단계 확인 중</div>
+              </div>
+              <div class="signal-card">
+                <div class="signal-label">브리핑 상태</div>
+                <div class="signal-value" id="briefingStatus">연결 준비 중</div>
+                <div class="signal-meta" id="briefingMiniMeta">요약 파일 로딩 대기</div>
+              </div>
+              <div class="signal-card">
+                <div class="signal-label">연결 안정성</div>
+                <div class="signal-value" id="incidentState">확인 중</div>
+                <div class="signal-meta" id="incidentMiniMeta">최근 기록 읽는 중</div>
+              </div>
+              <div class="signal-card">
+                <div class="signal-label">마지막 갱신</div>
+                <div class="signal-value" id="lastUpdatedTop">-</div>
+                <div class="signal-meta">홈 요약 기준</div>
+              </div>
+            </div>
 
-      <section class="card">
-        <h2>오늘 할 일</h2>
-        <div class="sub">복잡한 보드 대신, 지금 중요한 것만 세 줄로 보이게 했습니다.</div>
-        <div class="brief" id="todoPreviewArea"></div>
-      </section>
-
-      <section class="card">
-        <div class="pill ok">메신저 입력 → 저장 → 대시보드 표시</div>
-        <h2>비서에게 요청 남기기</h2>
-        <div class="sub">나중에는 여기 내용이 메신저와 옵시디언으로 연결될 수 있습니다.</div>
-        <textarea id="requestBox" placeholder="예: 오늘 시스템 진행률 다시 계산해줘&#10;예: 최근 끊김 원인만 짧게 정리해줘&#10;예: 브리핑 자동화 다음 단계 보여줘"></textarea>
-        <div class="helper">현재는 연결 전이라 샘플 입력만 동작합니다.</div>
-      </section>
-
-      <section class="card">
-        <h2>최근 요청</h2>
-        <div class="sub">비서가 어떤 요청을 받았는지 간단히 보는 영역입니다.</div>
-        <div class="history" id="historyArea">
-          <div class="history-item">
-            <strong>오늘 브리핑 만들기</strong>
-            <span>방금 본 요약 화면</span>
-          </div>
-          <div class="history-item">
-            <strong>장보기 목록 정리</strong>
-            <span>카테고리별로 묶어 보여주기</span>
+            <div class="nav-pills" aria-label="빠른 구역 이동">
+              <a class="nav-pill" href="#progress">진행 상황</a>
+              <a class="nav-pill" href="#signals">연결 상태</a>
+              <a class="nav-pill" href="#briefing">오늘 브리핑</a>
+              <a class="nav-pill" href="#request">비서 요청</a>
+            </div>
           </div>
         </div>
       </section>
-    </div>
 
-    <div class="footer-note" id="footerNote">홈 에이전트 데이터를 불러오는 중입니다.</div>
+      <div class="section-grid" style="margin-top:14px;">
+        <section class="panel" id="progress">
+          <div class="panel-head">
+            <div>
+              <div class="panel-kicker">Build Flow</div>
+              <h2 class="panel-title">시스템 구축 진행 상황</h2>
+              <p class="panel-sub">단계별 완료 / 진행 중 / 대기 상태를 한 번에 보이게 바꿨습니다.</p>
+            </div>
+            <span class="pill pending" id="progressLabel">읽는 중</span>
+          </div>
+
+          <div class="metrics">
+            <div class="metric">
+              <div class="metric-label">전체 진행률</div>
+              <div class="metric-value" id="metricProgress">0%</div>
+              <div class="metric-detail">현재 흐름 기준</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">오늘 일정</div>
+              <div class="metric-value" id="scheduleCount">0건</div>
+              <div class="metric-detail">가족 일정 요약</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">우선 할 일</div>
+              <div class="metric-value" id="todoCount">0건</div>
+              <div class="metric-detail">지금 처리 우선</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">장보기 확인</div>
+              <div class="metric-value" id="shoppingCount">0개</div>
+              <div class="metric-detail">생활 체크</div>
+            </div>
+          </div>
+
+          <div class="progress-track" aria-hidden="true">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <div class="progress-meta" id="progressMeta">진행 상황을 불러오는 중입니다.</div>
+          <div class="focus-card">
+            <div class="focus-line"><span class="focus-dot"></span><span id="nextFocus">현재 우선 처리 포인트를 계산하는 중입니다.</span></div>
+            <div class="focus-copy" id="focusDetail">진행 중인 단계와 대기 중인 단계를 비교해 다음 한 걸음을 짧게 보여줍니다.</div>
+          </div>
+          <div class="timeline" id="buildStages"></div>
+        </section>
+
+        <section class="panel" id="signals">
+          <div class="panel-head">
+            <div>
+              <div class="panel-kicker">Stability</div>
+              <h2 class="panel-title">연결 상태 / 최근 끊김</h2>
+              <p class="panel-sub">느려짐이나 timeout이 생기면 이 카드에서 바로 보이게 했습니다.</p>
+            </div>
+            <span class="pill pending" id="incidentPill">확인 중</span>
+          </div>
+
+          <div class="focus-card">
+            <div class="stage-head">
+              <div>
+                <strong class="stage-title" id="incidentTitle">읽는 중</strong>
+                <div class="stage-copy" id="incidentDetail">최근 기록을 불러오는 중입니다.</div>
+              </div>
+              <span class="badge pending" id="incidentBadge">대기</span>
+            </div>
+            <div class="focus-copy" id="incidentMeta">-</div>
+          </div>
+
+          <div class="health-grid" id="serviceHealth"></div>
+        </section>
+      </div>
+
+      <div class="section-grid" style="margin-top:14px;">
+        <section class="panel" id="briefing">
+          <div class="panel-head">
+            <div>
+              <div class="panel-kicker">Today Briefing</div>
+              <h2 class="panel-title">오늘 브리핑</h2>
+              <p class="panel-sub">가장 먼저 봐야 할 내용만 짧게 잘라서 보여줍니다.</p>
+            </div>
+            <span class="status-dot ok" id="briefingPill">준비 중</span>
+          </div>
+          <div class="brief-list" id="briefingArea"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <div class="panel-kicker">Today Queue</div>
+              <h2 class="panel-title">오늘 할 일</h2>
+              <p class="panel-sub">복잡한 보드 대신 지금 바로 손대야 할 것만 보입니다.</p>
+            </div>
+            <span class="pill pending" id="todoPill">읽는 중</span>
+          </div>
+          <div class="brief-list" id="todoPreviewArea"></div>
+        </section>
+      </div>
+
+      <div class="section-grid" style="margin-top:14px;">
+        <section class="panel" id="request">
+          <div class="panel-head">
+            <div>
+              <div class="panel-kicker">Assistant Input</div>
+              <h2 class="panel-title">비서에게 요청 남기기</h2>
+              <p class="panel-sub">짧게 적어도 바로 이해되도록 입력 영역을 크게 두었습니다.</p>
+            </div>
+            <span class="pill ok">메신저 ↔ 대시보드 확장 준비</span>
+          </div>
+
+          <textarea id="requestBox" class="request-box" placeholder="예: 오늘 시스템 진행률 다시 계산해줘&#10;예: 최근 끊김 원인만 3줄로 정리해줘&#10;예: 저녁 브리핑 문구를 한 번에 만들어줘"></textarea>
+          <div class="request-helper" id="requestHelper">현재는 샘플 동작만 연결되어 있습니다. 나중에는 메신저/옵시디언과 이어질 수 있습니다.</div>
+
+          <div class="request-suggestions">
+            <button class="request-chip" data-request="오늘 시스템 진행률 다시 계산해줘.\n다음 단계만 짧게 알려줘.">
+              <strong>진행률 다시 보기</strong>
+              <span>지금 단계와 다음 단계만 요청</span>
+            </button>
+            <button class="request-chip" data-request="최근 끊김 원인만 3줄로 정리해줘.\n재발 방지까지 붙여줘.">
+              <strong>끊김 원인 정리</strong>
+              <span>문제 / 원인 / 조치만 간단히</span>
+            </button>
+            <button class="request-chip" data-request="오늘 저녁 브리핑 문구를 가족용으로 짧게 만들어줘.\n일정과 할 일만 포함해줘.">
+              <strong>브리핑 문구 생성</strong>
+              <span>메신저로 바로 보낼 짧은 버전</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <div class="panel-kicker">Recent Activity</div>
+              <h2 class="panel-title">최근 요청</h2>
+              <p class="panel-sub">최근에 남긴 요청과 지금 보고 있는 흐름을 같이 잡아줍니다.</p>
+            </div>
+            <span class="pill pending">실시간 반영 준비</span>
+          </div>
+          <div class="activity-list" id="historyArea"></div>
+        </section>
+      </div>
+
+      <div class="footer-note" id="footerNote">홈 에이전트 데이터를 불러오는 중입니다.</div>
+    </main>
   </div>
 
   <script>
@@ -371,17 +1052,27 @@
     const refreshBtn = document.getElementById('refreshBtn');
     const sampleBtn = document.getElementById('sampleBtn');
     const clearBtn = document.getElementById('clearBtn');
-    const briefingArea = document.getElementById('briefingArea');
-    const historyArea = document.getElementById('historyArea');
-    const todoPreviewArea = document.getElementById('todoPreviewArea');
-    const footerNote = document.getElementById('footerNote');
+    const suggestionButtons = Array.from(document.querySelectorAll('[data-request]'));
+
     const progressPercent = document.getElementById('progressPercent');
+    const progressMiniMeta = document.getElementById('progressMiniMeta');
     const briefingStatus = document.getElementById('briefingStatus');
+    const briefingMiniMeta = document.getElementById('briefingMiniMeta');
     const incidentState = document.getElementById('incidentState');
+    const incidentMiniMeta = document.getElementById('incidentMiniMeta');
+    const lastUpdatedTop = document.getElementById('lastUpdatedTop');
+
     const progressLabel = document.getElementById('progressLabel');
     const progressFill = document.getElementById('progressFill');
     const progressMeta = document.getElementById('progressMeta');
+    const metricProgress = document.getElementById('metricProgress');
+    const scheduleCount = document.getElementById('scheduleCount');
+    const todoCount = document.getElementById('todoCount');
+    const shoppingCount = document.getElementById('shoppingCount');
     const buildStages = document.getElementById('buildStages');
+    const nextFocus = document.getElementById('nextFocus');
+    const focusDetail = document.getElementById('focusDetail');
+
     const incidentPill = document.getElementById('incidentPill');
     const incidentTitle = document.getElementById('incidentTitle');
     const incidentDetail = document.getElementById('incidentDetail');
@@ -389,18 +1080,55 @@
     const incidentMeta = document.getElementById('incidentMeta');
     const serviceHealth = document.getElementById('serviceHealth');
 
+    const briefingArea = document.getElementById('briefingArea');
+    const briefingPill = document.getElementById('briefingPill');
+    const todoPreviewArea = document.getElementById('todoPreviewArea');
+    const todoPill = document.getElementById('todoPill');
+    const historyArea = document.getElementById('historyArea');
+    const footerNote = document.getElementById('footerNote');
+    const heroSummary = document.getElementById('heroSummary');
+    const mobileUpdated = document.getElementById('mobileUpdated');
+    const sidebarUpdated = document.getElementById('sidebarUpdated');
+    const sidebarFocus = document.getElementById('sidebarFocus');
+    const sidebarProgress = document.getElementById('sidebarProgress');
+    const sidebarIncident = document.getElementById('sidebarIncident');
+    const sidebarTodoCount = document.getElementById('sidebarTodoCount');
+    const requestHelper = document.getElementById('requestHelper');
+
+    function escapeHTML(value) {
+      return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[char]));
+    }
+
     function toneClass(value) {
-      if (value === '완료' || value === '정상') return 'ok';
+      if (value === '완료' || value === '정상' || value === '준비됨' || value === '연결됨') return 'ok';
       if (value === '진행 중' || value === '주의') return 'warn';
-      if (value === '대기' || value === '정보 없음') return 'pending';
+      if (value === '대기' || value === '정보 없음' || value === '준비 중') return 'pending';
       return 'danger';
     }
 
+    function setTone(element, value) {
+      if (!element) return;
+      element.className = element.className.replace(/\b(ok|warn|pending|danger)\b/g, '').replace(/\s+/g, ' ').trim();
+      element.classList.add(toneClass(value));
+    }
+
     function renderBriefing(lines) {
-      briefingArea.innerHTML = (lines.length ? lines : ['브리핑 내용이 없습니다.']).map((line, index) => `
+      const rows = lines.length ? lines : ['브리핑 내용이 없습니다.'];
+      briefingArea.innerHTML = rows.map((line, index) => `
         <div class="brief-item">
-          <strong>${index + 1}.</strong>
-          <span>${line}</span>
+          <div class="brief-head">
+            <span class="brief-index">${index + 1}</span>
+            <div>
+              <strong class="brief-title">핵심 메모</strong>
+              <div class="brief-copy">${escapeHTML(line)}</div>
+            </div>
+          </div>
         </div>
       `).join('');
     }
@@ -408,22 +1136,29 @@
     function renderTodoPreview(items) {
       const rows = items.length ? items : ['남은 할 일이 없습니다.'];
       todoPreviewArea.innerHTML = rows.map((item, index) => `
-        <div class="list-item">
-          <strong>${index + 1}. ${item}</strong>
-          <span>데스크톱 본부 기준 할 일 미리보기</span>
+        <div class="brief-item">
+          <div class="brief-head">
+            <span class="brief-index">${index + 1}</span>
+            <div>
+              <strong class="brief-title">${escapeHTML(item)}</strong>
+              <div class="brief-copy">지금 바로 확인하기 좋은 우선 항목</div>
+            </div>
+          </div>
         </div>
       `).join('');
+      todoPill.textContent = items.length ? `${items.length}건` : '없음';
+      setTone(todoPill, items.length ? '진행 중' : '완료');
     }
 
     function renderStages(stages) {
       buildStages.innerHTML = stages.map((stage) => `
-        <div class="stage-item">
-          <div class="stage-top">
-            <div class="stage-main">
-              <strong>${stage.name}</strong>
-              <span>${stage.detail}</span>
+        <div class="stage">
+          <div class="stage-head">
+            <div>
+              <strong class="stage-title">${escapeHTML(stage.name)}</strong>
+              <div class="stage-copy">${escapeHTML(stage.detail)}</div>
             </div>
-            <span class="badge ${toneClass(stage.status)}">${stage.status}</span>
+            <span class="badge ${toneClass(stage.status)}">${escapeHTML(stage.status)}</span>
           </div>
         </div>
       `).join('');
@@ -431,88 +1166,205 @@
 
     function renderHealth(items) {
       serviceHealth.innerHTML = items.map((item) => `
-        <div class="health-item">
-          <div class="health-top">
-            <div class="health-main">
-              <strong>${item.name}</strong>
-              <span>${item.detail}</span>
+        <div class="health">
+          <div class="health-head">
+            <div>
+              <strong class="health-title">${escapeHTML(item.name)}</strong>
+              <div class="health-copy">${escapeHTML(item.detail)}</div>
             </div>
-            <span class="badge ${toneClass(item.state)}">${item.state}</span>
+            <span class="badge ${toneClass(item.state)}">${escapeHTML(item.state)}</span>
           </div>
         </div>
       `).join('');
     }
 
-    function applyTone(element, tone) {
-      element.className = element.className.replace(/\b(ok|warn|pending|danger)\b/g, '').trim();
-      element.classList.add(tone);
+    function renderHistory(items) {
+      historyArea.innerHTML = items.map((item) => `
+        <div class="activity">
+          <div class="activity-head">
+            <div>
+              <strong class="activity-title">${escapeHTML(item.title)}</strong>
+              <div class="activity-copy">${escapeHTML(item.detail)}</div>
+            </div>
+            <span class="badge ${toneClass(item.state)}">${escapeHTML(item.state)}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function summarizeNextFocus(data) {
+      const waitingStage = (data.build_stages || []).find((stage) => stage.status === '대기');
+      const activeStage = (data.build_stages || []).find((stage) => stage.status === '진행 중');
+      if (waitingStage && activeStage) {
+        return {
+          title: `${activeStage.name} 마무리 후 ${waitingStage.name}로 넘어가면 됩니다.`,
+          detail: `${activeStage.detail} · 다음 단계: ${waitingStage.detail}`
+        };
+      }
+      if (activeStage) {
+        return {
+          title: `${activeStage.name}를 계속 밀면 됩니다.`,
+          detail: activeStage.detail
+        };
+      }
+      return {
+        title: '주요 단계는 안정화 구간입니다.',
+        detail: '이제 남은 것은 미세 조정과 자동 연결 보완입니다.'
+      };
     }
 
     function renderIncident(incident) {
       const tone = toneClass(incident.state);
       incidentState.textContent = incident.state;
+      incidentMiniMeta.textContent = incident.action || '연결 상태 확인 중';
       incidentTitle.textContent = incident.title;
       incidentDetail.textContent = incident.detail;
       incidentBadge.textContent = incident.state;
       incidentPill.textContent = incident.state;
-      incidentMeta.textContent = `최근 기록: ${incident.last_seen} · 조치: ${incident.action}`;
-      applyTone(incidentPill, tone);
-      applyTone(incidentBadge, tone);
+      incidentMeta.textContent = `최근 기록: ${incident.last_seen || '-'} · 조치: ${incident.action || '-'}`;
+      setTone(incidentPill, incident.state);
+      setTone(incidentBadge, incident.state);
+      sidebarIncident.textContent = incident.state;
+    }
+
+    function persistDraft() {
+      localStorage.setItem('home-agent-request-draft', requestBox.value);
+    }
+
+    function restoreDraft() {
+      const saved = localStorage.getItem('home-agent-request-draft');
+      if (saved) requestBox.value = saved;
+    }
+
+    function seedRequest(value) {
+      requestBox.value = value;
+      persistDraft();
+      requestBox.focus();
+      requestBox.setSelectionRange(requestBox.value.length, requestBox.value.length);
+      requestHelper.textContent = '샘플 요청을 넣었습니다. 나중에는 이 영역이 실제 메신저 요청과 연결될 수 있습니다.';
+      renderHistory([
+        { title: '사용자 새 요청', detail: value.split('\n')[0] || '요청 입력됨', state: '진행 중' },
+        { title: '대시보드 반영', detail: '입력값을 기준으로 다음 동작을 잡는 자리입니다.', state: '대기' },
+        { title: '최근 연결 상태 확인', detail: incidentState.textContent || '확인 중', state: incidentState.textContent || '정보 없음' }
+      ]);
     }
 
     async function loadSummary() {
       briefingStatus.textContent = '읽는 중';
+      briefingMiniMeta.textContent = 'home-summary.json 확인 중';
       footerNote.textContent = '홈 에이전트 데이터를 불러오는 중입니다.';
+
       try {
-        const response = await fetch('./home-summary.json?_=' + Date.now());
+        const response = await fetch('./home-summary.json?_=' + Date.now(), { cache: 'no-store' });
+        if (!response.ok) throw new Error('summary fetch failed');
         const data = await response.json();
-        progressPercent.textContent = `${data.build_progress_percent}%`;
-        progressLabel.textContent = data.build_stage_label;
-        progressFill.style.width = `${data.build_progress_percent}%`;
-        progressMeta.textContent = `현재 기준: ${data.build_stage_label}`;
-        briefingStatus.textContent = '연결됨';
+
+        const progress = Number(data.build_progress_percent || 0);
+        const briefingLines = data.briefing_lines || [];
+        const todoPreview = data.todo_preview || [];
+        const next = summarizeNextFocus(data);
+
+        progressPercent.textContent = `${progress}%`;
+        progressMiniMeta.textContent = data.build_stage_label || '현재 단계 계산 완료';
+        progressLabel.textContent = data.build_stage_label || '정보 없음';
+        progressFill.style.width = `${Math.max(0, Math.min(100, progress))}%`;
+        progressMeta.textContent = `현재 기준: ${data.build_stage_label || '-'} · 마지막 갱신 ${data.last_updated || '-'}`;
+        metricProgress.textContent = `${progress}%`;
+        scheduleCount.textContent = `${data.today_schedule_count || 0}건`;
+        todoCount.textContent = `${data.today_todo_count || 0}건`;
+        shoppingCount.textContent = `${data.shopping_count || 0}개`;
+        nextFocus.textContent = next.title;
+        focusDetail.textContent = next.detail;
+
         renderStages(data.build_stages || []);
         renderIncident(data.incident_status || { state: '정보 없음', title: '정보 없음', detail: '정보 없음', last_seen: '-', action: '-' });
         renderHealth(data.service_health || []);
-        renderBriefing(data.briefing_lines || []);
-        renderTodoPreview(data.todo_preview || []);
-        footerNote.textContent = `마지막 갱신: ${data.last_updated}`;
+        renderBriefing(briefingLines);
+        renderTodoPreview(todoPreview);
+
+        const briefingTone = briefingLines.length ? '연결됨' : '대기';
+        briefingStatus.textContent = briefingTone === '연결됨' ? '연결됨' : '대기';
+        briefingMiniMeta.textContent = briefingLines.length ? `${briefingLines.length}줄 요약 준비` : '브리핑 내용 없음';
+        briefingPill.textContent = briefingLines.length ? '준비됨' : '비어 있음';
+        setTone(briefingPill, briefingLines.length ? '준비됨' : '대기');
+
+        lastUpdatedTop.textContent = data.last_updated || '-';
+        footerNote.textContent = `마지막 갱신: ${data.last_updated || '-'} · ${escapeHTML(data.latest_memo || '홈 에이전트 공개 요약 기준')}`;
+        heroSummary.textContent = `${data.latest_memo || '데이터 요약이 준비되었습니다.'} 오늘 일정 ${data.today_schedule_count || 0}건, 할 일 ${data.today_todo_count || 0}건, 장보기 ${data.shopping_count || 0}개 기준으로 표시합니다.`;
+        mobileUpdated.textContent = `${data.last_updated || '-'} 갱신`;
+        sidebarUpdated.textContent = `${data.last_updated || '-'} 갱신`;
+        sidebarFocus.textContent = next.title;
+        sidebarProgress.textContent = `${progress}%`;
+        sidebarTodoCount.textContent = `${data.today_todo_count || 0}건`;
+
+        setTone(progressLabel, data.build_stage_label?.includes('거의') ? '완료' : '진행 중');
+
+        const defaultHistory = [
+          { title: '오늘 브리핑 확인', detail: `요약 ${briefingLines.length || 0}줄 준비됨`, state: briefingLines.length ? '완료' : '대기' },
+          { title: '진행 상황 점검', detail: data.build_stage_label || '단계 계산됨', state: progress >= 80 ? '완료' : '진행 중' },
+          { title: '연결 안정성 확인', detail: data.incident_status?.detail || '최근 상태 확인', state: data.incident_status?.state || '정보 없음' }
+        ];
+        renderHistory(defaultHistory);
       } catch (error) {
         briefingStatus.textContent = '오류';
+        briefingMiniMeta.textContent = '요약 파일 연결 필요';
         progressPercent.textContent = '오류';
+        progressMiniMeta.textContent = '진행 정보 확인 불가';
         progressLabel.textContent = '요약 파일 확인 필요';
+        metricProgress.textContent = '오류';
         progressMeta.textContent = 'home-summary.json 연결이 필요합니다.';
         incidentState.textContent = '오류';
+        incidentMiniMeta.textContent = '데이터 연결 실패';
         incidentTitle.textContent = '요약 파일을 읽지 못했습니다.';
         incidentDetail.textContent = '대시보드 데이터 연결을 먼저 확인해 주세요.';
         incidentMeta.textContent = 'home-summary.json 연결이 필요합니다.';
-        renderBriefing(['요약 파일을 읽지 못했습니다.']);
-        renderTodoPreview([]);
         buildStages.innerHTML = '';
         serviceHealth.innerHTML = '';
+        renderBriefing(['요약 파일을 읽지 못했습니다.']);
+        renderTodoPreview([]);
+        renderHistory([
+          { title: '데이터 연결 필요', detail: 'home-summary.json 업로드 또는 갱신 확인', state: '오류' },
+          { title: '현재 화면', detail: 'UI는 준비되었지만 라이브 데이터가 비어 있습니다.', state: '대기' }
+        ]);
         footerNote.textContent = 'home-summary.json 연결이 필요합니다.';
+        mobileUpdated.textContent = '연결 필요';
+        sidebarUpdated.textContent = '연결 필요';
+        sidebarFocus.textContent = '먼저 공개 요약 파일 연결이 필요합니다.';
+        sidebarProgress.textContent = '오류';
+        sidebarIncident.textContent = '오류';
+        sidebarTodoCount.textContent = '-';
+        setTone(progressLabel, '오류');
+        setTone(incidentPill, '오류');
+        setTone(incidentBadge, '오류');
+        setTone(briefingPill, '오류');
       }
     }
 
+    refreshBtn.addEventListener('click', loadSummary);
+
+    sampleBtn.addEventListener('click', () => {
+      seedRequest('오늘 시스템 진행률 다시 계산해줘.\n최근 끊김 원인만 3줄로 정리해줘.');
+    });
+
+    clearBtn.addEventListener('click', () => {
+      requestBox.value = '';
+      persistDraft();
+      requestHelper.textContent = '입력칸을 비웠습니다. 다시 짧게 요청을 남길 수 있습니다.';
+    });
+
+    suggestionButtons.forEach((button) => {
+      button.addEventListener('click', () => seedRequest(button.dataset.request || ''));
+    });
+
+    requestBox.addEventListener('input', persistDraft);
+    requestBox.addEventListener('change', persistDraft);
     requestBox.addEventListener('focus', () => {
       if (!requestBox.value.trim()) {
-        requestBox.value = '오늘 시스템 진행률 다시 계산해줘.\n최근 끊김 원인만 짧게 정리해줘.';
+        requestHelper.textContent = '예: "오늘 진행률 다시 계산해줘" 처럼 짧게 적으면 됩니다.';
       }
     });
 
-    requestBox.addEventListener('change', () => {
-      historyArea.innerHTML = `
-        <div class="history-item">
-          <strong>사용자 새 요청</strong>
-          <span>${requestBox.value.split('\n')[0] || '요청 입력됨'}</span>
-        </div>
-        <div class="history-item">
-          <strong>끊김 상태 점검</strong>
-          <span>연결 안정성 카드에서 바로 확인</span>
-        </div>
-      `;
-    });
-
+    restoreDraft();
     loadSummary();
   </script>
 </body>
