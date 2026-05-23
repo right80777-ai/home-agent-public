@@ -1,0 +1,73 @@
+{
+  "today_schedule_count": 1,
+  "today_todo_count": 3,
+  "shopping_count": 5,
+  "briefing_lines": [
+    "오늘 일정 1건이 있습니다.",
+    "중요한 할 일 3건이 남아 있습니다.",
+    "장보기 항목 5개 확인이 필요합니다.",
+    "시스템 구축은 현재 60% 단계입니다."
+  ],
+  "latest_memo": "데스크톱 본부 기준으로 자동 갱신되었습니다.",
+  "last_updated": "2026-05-23",
+  "todo_preview": [
+    "병원 일정 확인",
+    "장보기 목록 정리",
+    "저녁 브리핑 문구 준비"
+  ],
+  "build_progress_percent": 60,
+  "build_stage_label": "뼈대 완성 · 연결선 작업 중",
+  "build_stages": [
+    {
+      "name": "서버/본부 준비",
+      "status": "완료",
+      "detail": "호스팅 서버와 데스크톱 본부 기준 구조 사용 중"
+    },
+    {
+      "name": "텔레그램 연결",
+      "status": "완료",
+      "detail": "현재 이 방에서 Hermes 응답 가능"
+    },
+    {
+      "name": "브리핑 자동화",
+      "status": "진행 중",
+      "detail": "아침 브리핑 cron 등록됨"
+    },
+    {
+      "name": "대시보드 반영",
+      "status": "진행 중",
+      "detail": "웹 요약 파일 자동 생성 중"
+    },
+    {
+      "name": "옵시디언 자동 연결",
+      "status": "대기",
+      "detail": "메신저 입력 자동 적재는 아직 미완료"
+    }
+  ],
+  "service_health": [
+    {
+      "name": "텔레그램 게이트웨이",
+      "state": "정상",
+      "detail": "현재 메시지 수신/응답 가능"
+    },
+    {
+      "name": "대시보드 요약 갱신",
+      "state": "정상",
+      "detail": "home-summary.json 생성 가능"
+    },
+    {
+      "name": "보조 API 응답 안정성",
+      "state": "주의",
+      "detail": "최근 timeout 흔적 감지"
+    }
+  ],
+  "incident_status": {
+    "state": "주의",
+    "title": "최근 끊김 감지",
+    "detail": "보조 응답이 30초를 넘겨 일부 보조 작업이 끊길 수 있습니다.",
+    "last_seen": "최근",
+    "source": "agent.log",
+    "action": "반복되면 재시도 또는 보조 모델 경로 점검",
+    "raw_message": "TimeoutError: Codex auxiliary Responses stream exceeded 30.0s total timeout"
+  }
+}

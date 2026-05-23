@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>홈 에이전트</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --line: #e4e9f2;
+      --text: #162033;
+      --muted: #66718a;
+      --accent: #3f6fff;
+      --accent-soft: #ecf2ff;
+      --ok-bg: #e9f8ef;
+      --ok-text: #1f7a47;
+      --warn-bg: #fff5df;
+      --warn-text: #9a6200;
+      --pending-bg: #f1f3f8;
+      --pending-text: #5e6b84;
+      --danger-bg: #ffe8e8;
+      --danger-text: #b13737;
+      --radius: 20px;
+      --shadow: 0 10px 30px rgba(22, 32, 51, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Pretendard", "Noto Sans KR", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .wrap {
+      width: min(760px, calc(100% - 24px));
+      margin: 0 auto;
+      padding: 18px 0 40px;
+    }
+
+    .hero,
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 22px;
+      margin-bottom: 14px;
+    }
+
+    .eyebrow,
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    .eyebrow {
+      background: var(--accent-soft);
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    .pill.ok { background: var(--ok-bg); color: var(--ok-text); }
+    .pill.warn { background: var(--warn-bg); color: var(--warn-text); }
+    .pill.pending { background: var(--pending-bg); color: var(--pending-text); }
+    .pill.danger { background: var(--danger-bg); color: var(--danger-text); }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 1.75rem;
+      line-height: 1.2;
+    }
+
+    .hero p,
+    .sub,
+    .helper,
+    .footer-note,
+    .meta,
+    .detail,
+    .muted {
+      color: var(--muted);
+    }
+
+    .hero p { margin: 0; }
+
+    .quick-status,
+    .stack,
+    .brief,
+    .history,
+    .stage-list,
+    .health-list,
+    .actions {
+      display: grid;
+      gap: 10px;
+    }
+
+    .quick-status {
+      grid-template-columns: repeat(3, 1fr);
+      margin-top: 16px;
+    }
+
+    .status-box,
+    .brief-item,
+    .list-item,
+    .history-item,
+    .stage-item,
+    .health-item,
+    .incident-box {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fbfcff;
+    }
+
+    .status-box,
+    .stage-item,
+    .health-item,
+    .incident-box {
+      padding: 14px;
+    }
+
+    .status-label {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .status-value {
+      font-size: 1.05rem;
+      font-weight: 800;
+    }
+
+    .card { padding: 18px; }
+    .card h2 { margin: 0 0 6px; font-size: 1.1rem; }
+    .sub { font-size: 0.93rem; margin-bottom: 14px; }
+
+    .brief-item,
+    .list-item,
+    .history-item {
+      padding: 14px;
+    }
+
+    .brief-item strong,
+    .list-item strong,
+    .history-item strong,
+    .stage-main strong,
+    .health-main strong,
+    .incident-main strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.96rem;
+    }
+
+    .brief-item span,
+    .list-item span,
+    .history-item span,
+    .stage-main span,
+    .health-main span,
+    .incident-main span {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .progress-head,
+    .incident-head,
+    .stage-top,
+    .health-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 12px;
+      border-radius: 999px;
+      background: #edf2fb;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #5b7cff, #86a2ff);
+      border-radius: inherit;
+      transition: width 0.25s ease;
+    }
+
+    .meta { font-size: 0.84rem; }
+
+    .stage-main,
+    .health-main,
+    .incident-main {
+      flex: 1;
+    }
+
+    .badge {
+      flex-shrink: 0;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .badge.ok { background: var(--ok-bg); color: var(--ok-text); }
+    .badge.warn { background: var(--warn-bg); color: var(--warn-text); }
+    .badge.pending { background: var(--pending-bg); color: var(--pending-text); }
+    .badge.danger { background: var(--danger-bg); color: var(--danger-text); }
+
+    .actions { grid-template-columns: 1fr; }
+
+    button {
+      width: 100%;
+      min-height: 48px;
+      border: 0;
+      border-radius: 16px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 14px 16px;
+    }
+
+    .primary { background: var(--accent); color: white; }
+    .soft { background: var(--accent-soft); color: var(--accent); }
+
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      font: inherit;
+      resize: vertical;
+      color: var(--text);
+      background: #fcfdff;
+    }
+
+    .helper { margin-top: 10px; font-size: 0.88rem; }
+    .footer-note { margin-top: 14px; text-align: center; font-size: 0.85rem; }
+
+    @media (max-width: 640px) {
+      .wrap {
+        width: calc(100% - 16px);
+        padding-top: 12px;
+      }
+
+      h1 { font-size: 1.5rem; }
+      .hero, .card { border-radius: 18px; }
+      .quick-status { grid-template-columns: 1fr; }
+      .progress-head, .incident-head, .stage-top, .health-top {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="eyebrow">홈 에이전트 · 라이브 요약</div>
+      <h1>오늘 해야 할 일과 시스템 상태를<br />한눈에 보는 집 비서 화면</h1>
+      <p>구축 진행률과 최근 끊김 상태까지 같이 표시하는 운영용 대시보드입니다.</p>
+
+      <div class="quick-status">
+        <div class="status-box">
+          <div class="status-label">구축 진행률</div>
+          <div class="status-value" id="progressPercent">읽는 중</div>
+        </div>
+        <div class="status-box">
+          <div class="status-label">브리핑 상태</div>
+          <div class="status-value" id="briefingStatus">읽는 중</div>
+        </div>
+        <div class="status-box">
+          <div class="status-label">연결 안정성</div>
+          <div class="status-value" id="incidentState">확인 중</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="stack">
+      <section class="card">
+        <div class="progress-head">
+          <div>
+            <h2>시스템 구축 진행 상황</h2>
+            <div class="sub">사용자님이 바로 이해할 수 있게 단계별 진행률로 보이게 했습니다.</div>
+          </div>
+          <span class="pill pending" id="progressLabel">읽는 중</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill" aria-hidden="true"></div>
+        </div>
+        <div class="meta" id="progressMeta">진행 상황을 불러오는 중입니다.</div>
+        <div class="stage-list" id="buildStages" style="margin-top:12px;"></div>
+      </section>
+
+      <section class="card">
+        <div class="incident-head">
+          <div>
+            <h2>연결 상태 / 최근 끊김</h2>
+            <div class="sub">API 지연, 보조 작업 timeout, 재시도 필요 여부를 여기서 봅니다.</div>
+          </div>
+          <span class="pill pending" id="incidentPill">확인 중</span>
+        </div>
+        <div class="incident-box">
+          <div class="incident-head" style="margin-bottom:0;">
+            <div class="incident-main">
+              <strong id="incidentTitle">읽는 중</strong>
+              <span id="incidentDetail">최근 끊김 상태를 불러오는 중입니다.</span>
+            </div>
+            <span class="badge pending" id="incidentBadge">대기</span>
+          </div>
+        </div>
+        <div class="meta" id="incidentMeta" style="margin-top:10px;">-</div>
+        <div class="health-list" id="serviceHealth" style="margin-top:12px;"></div>
+      </section>
+
+      <section class="card">
+        <h2>오늘 브리핑</h2>
+        <div class="sub">가장 먼저 봐야 하는 내용만 짧게 보여줍니다.</div>
+        <div class="brief" id="briefingArea"></div>
+      </section>
+
+      <section class="card">
+        <h2>오늘 할 일</h2>
+        <div class="sub">복잡한 보드 대신, 지금 중요한 것만 세 줄로 보이게 했습니다.</div>
+        <div class="brief" id="todoPreviewArea"></div>
+      </section>
+
+      <section class="card">
+        <div class="pill ok">메신저 입력 → 저장 → 대시보드 표시</div>
+        <h2>비서에게 요청 남기기</h2>
+        <div class="sub">나중에는 여기 내용이 메신저와 옵시디언으로 연결될 수 있습니다.</div>
+        <textarea id="requestBox" placeholder="예: 오늘 시스템 진행률 다시 계산해줘&#10;예: 최근 끊김 원인만 짧게 정리해줘&#10;예: 브리핑 자동화 다음 단계 보여줘"></textarea>
+        <div class="helper">현재는 연결 전이라 샘플 입력만 동작합니다.</div>
+      </section>
+
+      <section class="card">
+        <h2>최근 요청</h2>
+        <div class="sub">비서가 어떤 요청을 받았는지 간단히 보는 영역입니다.</div>
+        <div class="history" id="historyArea">
+          <div class="history-item">
+            <strong>오늘 브리핑 만들기</strong>
+            <span>방금 본 요약 화면</span>
+          </div>
+          <div class="history-item">
+            <strong>장보기 목록 정리</strong>
+            <span>카테고리별로 묶어 보여주기</span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="footer-note" id="footerNote">홈 에이전트 데이터를 불러오는 중입니다.</div>
+  </div>
+
+  <script>
+    const requestBox = document.getElementById('requestBox');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const sampleBtn = document.getElementById('sampleBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const briefingArea = document.getElementById('briefingArea');
+    const historyArea = document.getElementById('historyArea');
+    const todoPreviewArea = document.getElementById('todoPreviewArea');
+    const footerNote = document.getElementById('footerNote');
+    const progressPercent = document.getElementById('progressPercent');
+    const briefingStatus = document.getElementById('briefingStatus');
+    const incidentState = document.getElementById('incidentState');
+    const progressLabel = document.getElementById('progressLabel');
+    const progressFill = document.getElementById('progressFill');
+    const progressMeta = document.getElementById('progressMeta');
+    const buildStages = document.getElementById('buildStages');
+    const incidentPill = document.getElementById('incidentPill');
+    const incidentTitle = document.getElementById('incidentTitle');
+    const incidentDetail = document.getElementById('incidentDetail');
+    const incidentBadge = document.getElementById('incidentBadge');
+    const incidentMeta = document.getElementById('incidentMeta');
+    const serviceHealth = document.getElementById('serviceHealth');
+
+    function toneClass(value) {
+      if (value === '완료' || value === '정상') return 'ok';
+      if (value === '진행 중' || value === '주의') return 'warn';
+      if (value === '대기' || value === '정보 없음') return 'pending';
+      return 'danger';
+    }
+
+    function renderBriefing(lines) {
+      briefingArea.innerHTML = (lines.length ? lines : ['브리핑 내용이 없습니다.']).map((line, index) => `
+        <div class="brief-item">
+          <strong>${index + 1}.</strong>
+          <span>${line}</span>
+        </div>
+      `).join('');
+    }
+
+    function renderTodoPreview(items) {
+      const rows = items.length ? items : ['남은 할 일이 없습니다.'];
+      todoPreviewArea.innerHTML = rows.map((item, index) => `
+        <div class="list-item">
+          <strong>${index + 1}. ${item}</strong>
+          <span>데스크톱 본부 기준 할 일 미리보기</span>
+        </div>
+      `).join('');
+    }
+
+    function renderStages(stages) {
+      buildStages.innerHTML = stages.map((stage) => `
+        <div class="stage-item">
+          <div class="stage-top">
+            <div class="stage-main">
+              <strong>${stage.name}</strong>
+              <span>${stage.detail}</span>
+            </div>
+            <span class="badge ${toneClass(stage.status)}">${stage.status}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderHealth(items) {
+      serviceHealth.innerHTML = items.map((item) => `
+        <div class="health-item">
+          <div class="health-top">
+            <div class="health-main">
+              <strong>${item.name}</strong>
+              <span>${item.detail}</span>
+            </div>
+            <span class="badge ${toneClass(item.state)}">${item.state}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function applyTone(element, tone) {
+      element.className = element.className.replace(/\b(ok|warn|pending|danger)\b/g, '').trim();
+      element.classList.add(tone);
+    }
+
+    function renderIncident(incident) {
+      const tone = toneClass(incident.state);
+      incidentState.textContent = incident.state;
+      incidentTitle.textContent = incident.title;
+      incidentDetail.textContent = incident.detail;
+      incidentBadge.textContent = incident.state;
+      incidentPill.textContent = incident.state;
+      incidentMeta.textContent = `최근 기록: ${incident.last_seen} · 조치: ${incident.action}`;
+      applyTone(incidentPill, tone);
+      applyTone(incidentBadge, tone);
+    }
+
+    async function loadSummary() {
+      briefingStatus.textContent = '읽는 중';
+      footerNote.textContent = '홈 에이전트 데이터를 불러오는 중입니다.';
+      try {
+        const response = await fetch('./home-summary.json?_=' + Date.now());
+        const data = await response.json();
+        progressPercent.textContent = `${data.build_progress_percent}%`;
+        progressLabel.textContent = data.build_stage_label;
+        progressFill.style.width = `${data.build_progress_percent}%`;
+        progressMeta.textContent = `현재 기준: ${data.build_stage_label}`;
+        briefingStatus.textContent = '연결됨';
+        renderStages(data.build_stages || []);
+        renderIncident(data.incident_status || { state: '정보 없음', title: '정보 없음', detail: '정보 없음', last_seen: '-', action: '-' });
+        renderHealth(data.service_health || []);
+        renderBriefing(data.briefing_lines || []);
+        renderTodoPreview(data.todo_preview || []);
+        footerNote.textContent = `마지막 갱신: ${data.last_updated}`;
+      } catch (error) {
+        briefingStatus.textContent = '오류';
+        progressPercent.textContent = '오류';
+        progressLabel.textContent = '요약 파일 확인 필요';
+        progressMeta.textContent = 'home-summary.json 연결이 필요합니다.';
+        incidentState.textContent = '오류';
+        incidentTitle.textContent = '요약 파일을 읽지 못했습니다.';
+        incidentDetail.textContent = '대시보드 데이터 연결을 먼저 확인해 주세요.';
+        incidentMeta.textContent = 'home-summary.json 연결이 필요합니다.';
+        renderBriefing(['요약 파일을 읽지 못했습니다.']);
+        renderTodoPreview([]);
+        buildStages.innerHTML = '';
+        serviceHealth.innerHTML = '';
+        footerNote.textContent = 'home-summary.json 연결이 필요합니다.';
+      }
+    }
+
+    requestBox.addEventListener('focus', () => {
+      if (!requestBox.value.trim()) {
+        requestBox.value = '오늘 시스템 진행률 다시 계산해줘.\n최근 끊김 원인만 짧게 정리해줘.';
+      }
+    });
+
+    requestBox.addEventListener('change', () => {
+      historyArea.innerHTML = `
+        <div class="history-item">
+          <strong>사용자 새 요청</strong>
+          <span>${requestBox.value.split('\n')[0] || '요청 입력됨'}</span>
+        </div>
+        <div class="history-item">
+          <strong>끊김 상태 점검</strong>
+          <span>연결 안정성 카드에서 바로 확인</span>
+        </div>
+      `;
+    });
+
+    loadSummary();
+  </script>
+</body>
+</html>
